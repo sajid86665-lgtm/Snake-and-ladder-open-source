@@ -1120,7 +1120,6 @@ function showModeSelection()
                     .setTitle("Online Mode")
                     .setMessage(_("coming_soon"))
                     .setPositiveButton("OK", function()
-                        -- Go back to home (main menu)
                         if menuDialog then
                             menuDialog.dismiss()
                             menuDialog = nil
@@ -1466,6 +1465,101 @@ function showResultDialog(msg)
         .show()
 end
 
+-- ===================== SHARE APP (Professional Text) =====================
+function getShareText()
+    return [[
+🐍 Snake & Ladder - The Ultimate Voice-Guided Board Game!
+
+Experience the classic Snake & Ladder game with a modern twist! This app is specially designed for blind and visually impaired users, featuring full voice guidance using Text-to-Speech. Roll the dice, climb ladders, avoid snakes, and race to the target number (50 or 100) exactly!
+
+🌟 Key Features:
+- Voice-guided gameplay with customizable TTS engine and language.
+- Three exciting modes: Pass and Play (2-4 players), Play with Computer, and Online (coming soon).
+- Fully accessible with screen readers like Jieshuo.
+- Customizable sound effects and volume controls.
+- Track your stats: wins, losses, snake bites, ladder climbs.
+- Gesture support: swipe down to roll, swipe up to exit, and more.
+- Privacy focused: no data collection, all settings stored locally.
+
+Download now and start your journey to victory!
+
+📲 Download Link: https://clck.ru/3VNDQx
+
+Share with friends and family and enjoy together!
+    ]]
+end
+
+function shareAppLink()
+    local shareText = getShareText()
+    local intent = Intent(Intent.ACTION_SEND)
+    intent.setType("text/plain")
+    intent.putExtra(Intent.EXTRA_TEXT, shareText)
+    activity.startActivity(Intent.createChooser(intent, "Share App"))
+end
+
+function showShareDialog()
+    local layout = LinearLayout(activity)
+    layout.setOrientation(LinearLayout.VERTICAL)
+    layout.setPadding(20,20,20,20)
+
+    local title = TextView(activity)
+    title.setText("Share App")
+    title.setTextSize(22)
+    title.setGravity(Gravity.CENTER)
+    title.setPadding(0,0,0,15)
+    layout.addView(title)
+
+    local steps = {
+        "Step 1: Click on the link below to download the app.",
+        "Step 2: Open the link in your browser (Chrome recommended).",
+        "Step 3: Click on the download button and install the app.",
+        "",
+        "For screen reader users (Jieshuo Light, Jieshuo+, Jieshuo Max):",
+        "  • Click on the app name link.",
+        "  • A dialog will ask: 'Do you want to open or import?'",
+        "  • Click 'OK' to import. Your tool will be ready to use!"
+    }
+
+    for i, step in ipairs(steps) do
+        local tv = TextView(activity)
+        tv.setText(step)
+        tv.setTextSize(16)
+        tv.setPadding(0,5,0,5)
+        layout.addView(tv)
+    end
+
+    -- Share and Cancel buttons
+    local btnLayout = LinearLayout(activity)
+    btnLayout.setOrientation(LinearLayout.HORIZONTAL)
+    btnLayout.setGravity(Gravity.CENTER)
+    btnLayout.setPadding(0,20,0,0)
+
+    local cancelBtn = Button(activity)
+    cancelBtn.setText("Cancel")
+    cancelBtn.setOnClickListener({onClick=function()
+        if shareDialog then shareDialog.dismiss() end
+    end})
+    btnLayout.addView(cancelBtn)
+
+    local shareBtn = Button(activity)
+    shareBtn.setText("Share")
+    shareBtn.setOnClickListener({onClick=function()
+        shareAppLink()
+        if shareDialog then shareDialog.dismiss() end
+    end})
+    btnLayout.addView(shareBtn)
+
+    layout.addView(btnLayout)
+
+    local builder = AlertDialog.Builder(activity)
+    builder.setTitle("Share App")
+    builder.setView(layout)
+    builder.setCancelable(false)
+    shareDialog = builder.show()
+end
+
+shareDialog = nil
+
 -- ===================== MAIN MENU =====================
 gameDialog = nil
 menuDialog = nil
@@ -1514,12 +1608,15 @@ function showMainMenuDialog()
         local p = PopupMenu(activity, v)
         p.getMenu().add("About")
         p.getMenu().add("Privacy Policy")
+        p.getMenu().add("Share App")
         p.setOnMenuItemClickListener({onMenuItemClick=function(item)
             local title = item.getTitle()
             if title == "About" then
                 showAbout()
             elseif title == "Privacy Policy" then
                 showPrivacyPolicy()
+            elseif title == "Share App" then
+                showShareDialog()
             end
             return true
         end})
