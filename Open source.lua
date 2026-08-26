@@ -205,7 +205,6 @@ local translations = {
         start_passing = "Start Passing Game",
         please_enter_p2 = "Please enter Player 2 name.",
         turn_message = "%s's Turn",
-        extra_turn = "You got 6! Extra turn!",
     },
     hi = {
         rolled = "ने पासा फेंका",
@@ -241,7 +240,6 @@ local translations = {
         start_passing = "पासिंग गेम शुरू करें",
         please_enter_p2 = "कृपया खिलाड़ी 2 का नाम दर्ज करें।",
         turn_message = "%s की बारी",
-        extra_turn = "आपको 6 मिला! अतिरिक्त बारी!",
     }
 }
 
@@ -1331,7 +1329,7 @@ function showGameDialog()
     status_tv.setText(_("turn_message", gameState.players[gameState.currentPlayer]))
 end
 
--- ===================== TURN LOGIC =====================
+-- ===================== TURN LOGIC (Extra Turn REMOVED) =====================
 function executeTurn(playerIndex)
     local playerName = gameState.players[playerIndex]
     local dice = math.random(1, 6)
@@ -1369,6 +1367,7 @@ function executeTurn(playerIndex)
             gameState.positions[playerIndex] = finalPos
             updateUI()
 
+            -- Check game over
             if finalPos >= winTarget then
                 gameState.isGameOver = true
                 stats.totalGames = stats.totalGames + 1
@@ -1392,20 +1391,8 @@ function executeTurn(playerIndex)
                 return
             end
 
-            if dice == 6 then
-                speak(_("extra_turn"))
-                task(500, function()
-                    if gameState.players[playerIndex] == _("computer") and gameState.gameMode == "computer" then
-                        executeComputerTurn()
-                    else
-                        roll_btn.setEnabled(true)
-                        status_tv.setText(_("turn_message", playerName))
-                    end
-                end)
-                return
-            else
-                nextTurn()
-            end
+            -- No extra turn on 6 - always move to next player
+            nextTurn()
         end)
     end)
 end
